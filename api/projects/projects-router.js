@@ -2,6 +2,86 @@ const express = require('express');
 const Projects = require('./projects-model')
 const router = express.Router();
 
-router.get('/')
+router.get('/', (req, res) => {
+    Projects.get()
+        .then(projects => {
+            if(!projects) {
+                res.status(200).json([])
+            } else {
+                res.status(200).json(projects)
+            }
+        })
+        .catch(error => {
+            res.status(404).json({ message: 'could not find projects'})
+        })
+})
 
+router.get('/:id', (req, res) => {
+    const projectId = req.params.id;
+    Projects.get(projectId)
+        .then(currentProject => {
+            if (currentProject) {
+                res.status(200).json(currentProject);
+            } else {
+                res.status(404).json( { message: 'could not find projects'} )
+            }
+        })
+        .catch(error => {
+            res.status(404).json( { message: 'could not find projects'} )
+        })
+})
+
+router.post('/', (req, res) => {
+    const newProject = req.body;
+    if (!newProject.name || !newProject.description) {
+        res.status(400).json( {message: "missing requirements"});
+    } else {
+        Projects.insert(newProject)
+            .then(insertedProject => {
+                res.status(201).json(insertedProject);
+            })
+    }
+})
+
+router.put('/:id', (req, res) => {
+    const updatedProject = req.body;
+    const projectId = req.params.id;
+    if (!updatedProject.name || !updatedProject.description || !updatedProject.completed) {
+        res.status(400).json( {message: "missing requirements"});
+    } else {
+        Projects.update(projectId, updatedProject)
+            .then(insertedProject => {
+                if (insertedProject) {
+                    res.status(201).json(insertedProject);
+                } else {
+                    res.status(404).json( {message: 'cannot find project with the given id'})
+                }
+            })
+    }
+}) 
+
+router.delete('/:id', (req, res) => {
+    const projectId = req.params.id;
+    Projects.remove(projectId)
+        .then(deletedProject => {
+            if (deletedProject) {
+                res.status(200);
+            } else {
+                res.status(404).json( {message: 'cannot find project with the given id'})
+            }
+        })
+})
+
+router.get('/:id/actions', (req, res) => {
+    const projectId = req.params.id;
+    Projects.getProjectActions(projectId)
+        .then(selectedProject => {
+            if (selectedProject) {
+                res.status(200).json(selectedProject);
+            } else {
+                res.status(404).json( {message: "cannot find project with the given id"})
+            }
+        })
+})
+ 
 module.exports = router;
