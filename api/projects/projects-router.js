@@ -1,5 +1,5 @@
 const express = require('express');
-const Projects = require('./projects-model')
+const Projects = require('./projects-model');
 const router = express.Router();
 
 router.get('/', (req, res) => {
@@ -31,7 +31,7 @@ router.get('/:id', (req, res) => {
         })
 })
 
-router.post('/', (req, res) => {
+router.post('/', (req, res, next) => {
     const newProject = req.body;
     if (!newProject.name || !newProject.description) {
         res.status(400).json( {message: "missing requirements"});
@@ -40,10 +40,11 @@ router.post('/', (req, res) => {
             .then(insertedProject => {
                 res.status(201).json(insertedProject);
             })
+            .catch(next);
     }
 })
 
-router.put('/:id', (req, res) => {
+router.put('/:id', (req, res, next) => {
     const updatedProject = req.body;
     const projectId = req.params.id;
     if (!updatedProject.name || !updatedProject.description || !updatedProject.completed) {
@@ -57,22 +58,24 @@ router.put('/:id', (req, res) => {
                     res.status(404).json( {message: 'cannot find project with the given id'})
                 }
             })
+            .catch(next);
     }
 }) 
 
-router.delete('/:id', (req, res) => {
+router.delete('/:id', (req, res, next) => {
     const projectId = req.params.id;
     Projects.remove(projectId)
         .then(deletedProject => {
             if (deletedProject) {
-                res.status(200);
+                res.status(200).json();
             } else {
                 res.status(404).json( {message: 'cannot find project with the given id'})
             }
         })
+        .catch(next);
 })
 
-router.get('/:id/actions', (req, res) => {
+router.get('/:id/actions', (req, res, next) => {
     const projectId = req.params.id;
     Projects.getProjectActions(projectId)
         .then(selectedProject => {
@@ -82,6 +85,7 @@ router.get('/:id/actions', (req, res) => {
                 res.status(404).json( {message: "cannot find project with the given id"})
             }
         })
+        .catch(next);
 })
  
 module.exports = router;
