@@ -1,5 +1,6 @@
 const express = require('express');
 const Actions = require('./actions-model');
+const { validateAction } = require('./actions-middlware');
 const router = express.Router();
 
 router.get('/', (req, res) => {
@@ -33,7 +34,7 @@ router.get('/:id', (req, res) => {
 
 router.post('/', (req, res, next) => {
     const newAction = req.body;
-    if (!newAction.notes || !newAction.description || !newAction.completed || !newAction.project_id) {
+    if (!newAction.notes || !newAction.description || !newAction.project_id) {
         res.status(400).json( {message: "missing body requirements"})
     } else {
         Actions.insert(newAction)
@@ -47,13 +48,16 @@ router.post('/', (req, res, next) => {
 router.put('/:id', (req, res, next) => {
     const actionId = req.params.id;
     const updatedAction = req.body;
-    if (!updatedAction.notes || !updatedAction.description || !updatedAction.completed || !updatedAction.project_id) {
+    if (!updatedAction.notes || !updatedAction.description || !updatedAction.project_id) {
         res.status(400).json( {message: "missing body requirements"})
     } else {
         Actions.update(actionId, updatedAction)
             .then(insertedAction => {
                 if (insertedAction) {
-                    res.status(201).json(insertedAction)
+                    Actions.get(insertedAction.id)
+                        .then(update => {
+                            res.status(200).json(update)
+                        }) 
                 } else {
                     res.status(404).json( {message: "action could not be found with given id"} )
                 }
@@ -66,7 +70,7 @@ router.delete('/:id', (req, res, next) => {
     const actionId = req.params.id;
     Actions.remove(actionId)
         .then(deletedAction => {
-            if (deletedAction) {
+            if (deletedAction > 0) {
                 res.status(200).json()
             } else {
                 res.status(404).json( {message: "action could not be found with given id"} )

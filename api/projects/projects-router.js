@@ -6,7 +6,7 @@ router.get('/', (req, res) => {
     Projects.get()
         .then(projects => {
             if(!projects) {
-                res.status(200).json([])
+                res.status(404).json([])
             } else {
                 res.status(200).json(projects)
             }
@@ -47,26 +47,29 @@ router.post('/', (req, res, next) => {
 router.put('/:id', (req, res, next) => {
     const updatedProject = req.body;
     const projectId = req.params.id;
-    if (!updatedProject.name || !updatedProject.description || !updatedProject.completed) {
+    if (!updatedProject.name || !updatedProject.description || updatedProject.completed === undefined) {
         res.status(400).json( {message: "missing requirements"});
-    } else {
+    } else { 
         Projects.update(projectId, updatedProject)
-            .then(insertedProject => {
-                if (insertedProject) {
-                    res.status(201).json(insertedProject);
+            .then(currentProject => { 
+                if (currentProject) {
+                    Projects.get(currentProject.id)
+                        .then(update => {
+                            res.status(200).json(update);
+                        })
                 } else {
                     res.status(404).json( {message: 'cannot find project with the given id'})
                 }
             })
             .catch(next);
     }
-}) 
+})
 
 router.delete('/:id', (req, res, next) => {
     const projectId = req.params.id;
     Projects.remove(projectId)
         .then(deletedProject => {
-            if (deletedProject) {
+            if (deletedProject > 0) {
                 res.status(200).json();
             } else {
                 res.status(404).json( {message: 'cannot find project with the given id'})
