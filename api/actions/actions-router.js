@@ -32,38 +32,30 @@ router.get('/:id', (req, res) => {
         })
 })
 
-router.post('/', (req, res, next) => {
+router.post('/', validateAction, (req, res, next) => {
     const newAction = req.body;
-    if (!newAction.notes || !newAction.description || !newAction.project_id) {
-        res.status(400).json( {message: "missing body requirements"})
-    } else {
-        Actions.insert(newAction)
-            .then(insertedAction => {
-                res.status(201).json(insertedAction)
-            })
-            .catch(next);
-    }
+    Actions.insert(newAction)
+        .then(insertedAction => {
+            res.status(201).json(insertedAction)
+        })
+        .catch(next);
 })
 
-router.put('/:id', (req, res, next) => {
+router.put('/:id', validateAction, (req, res, next) => {
     const actionId = req.params.id;
     const updatedAction = req.body;
-    if (!updatedAction.notes || !updatedAction.description || !updatedAction.project_id) {
-        res.status(400).json( {message: "missing body requirements"})
-    } else {
-        Actions.update(actionId, updatedAction)
-            .then(insertedAction => {
-                if (insertedAction) {
-                    Actions.get(insertedAction.id)
-                        .then(update => {
-                            res.status(200).json(update)
-                        }) 
-                } else {
-                    res.status(404).json( {message: "action could not be found with given id"} )
-                }
-            })
-            .catch(next);
-    }
+    Actions.update(actionId, updatedAction)
+        .then(insertedAction => {
+            if (insertedAction) {
+                Actions.get(insertedAction.id)
+                    .then(update => {
+                        res.status(200).json(update)
+                    }) 
+            } else {
+                res.status(404).json( {message: "action could not be found with given id"} )
+            }
+        })
+        .catch(next);
 })
 
 router.delete('/:id', (req, res, next) => {

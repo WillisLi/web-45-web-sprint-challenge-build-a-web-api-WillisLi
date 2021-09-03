@@ -1,5 +1,6 @@
 const express = require('express');
 const Projects = require('./projects-model');
+const { validateProjectId } = require('./projects-middleware.js');
 const router = express.Router();
 
 router.get('/', (req, res) => {
@@ -16,15 +17,11 @@ router.get('/', (req, res) => {
         })
 })
 
-router.get('/:id', (req, res) => {
+router.get('/:id', validateProjectId, (req, res) => {
     const projectId = req.params.id;
     Projects.get(projectId)
         .then(currentProject => {
-            if (currentProject) {
-                res.status(200).json(currentProject);
-            } else {
-                res.status(404).json( { message: 'could not find projects'} )
-            }
+            res.status(200).json(currentProject);
         })
         .catch(error => {
             res.status(404).json( { message: 'could not find projects'} )
@@ -44,7 +41,7 @@ router.post('/', (req, res, next) => {
     }
 })
 
-router.put('/:id', (req, res, next) => {
+router.put('/:id', validateProjectId, (req, res, next) => {
     const updatedProject = req.body;
     const projectId = req.params.id;
     if (!updatedProject.name || !updatedProject.description || updatedProject.completed === undefined) {
@@ -52,41 +49,29 @@ router.put('/:id', (req, res, next) => {
     } else { 
         Projects.update(projectId, updatedProject)
             .then(currentProject => { 
-                if (currentProject) {
-                    Projects.get(currentProject.id)
-                        .then(update => {
-                            res.status(200).json(update);
-                        })
-                } else {
-                    res.status(404).json( {message: 'cannot find project with the given id'})
-                }
+                Projects.get(currentProject.id)
+                    .then(update => {
+                        res.status(200).json(update);
+                    })
             })
             .catch(next);
     }
 })
 
-router.delete('/:id', (req, res, next) => {
+router.delete('/:id', validateProjectId, (req, res, next) => {
     const projectId = req.params.id;
     Projects.remove(projectId)
-        .then(deletedProject => {
-            if (deletedProject > 0) {
-                res.status(200).json();
-            } else {
-                res.status(404).json( {message: 'cannot find project with the given id'})
-            }
+        .then(() => {
+            res.status(200).json();
         })
         .catch(next);
 })
 
-router.get('/:id/actions', (req, res, next) => {
+router.get('/:id/actions', validateProjectId, (req, res, next) => {
     const projectId = req.params.id;
     Projects.getProjectActions(projectId)
         .then(selectedProject => {
-            if (selectedProject) {
-                res.status(200).json(selectedProject);
-            } else {
-                res.status(404).json( {message: "cannot find project with the given id"})
-            }
+            res.status(200).json(selectedProject);
         })
         .catch(next);
 })
