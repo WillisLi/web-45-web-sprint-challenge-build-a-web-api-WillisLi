@@ -147,7 +147,13 @@ We have provided test data for all the resources.
 Be prepared to demonstrate your understanding of this week's concepts by answering questions on the following topics. You might prepare by writing down your own answers before hand.
 
 1. The core features of Node.js and Express and why they are useful.
+  Node uses the same programming language and paradigm for both the client and server, has access to the npm repository, and JS is asynchronous and single-threaded.
+  Express is used to build web application, server single page applications, build REST services with JSON, serve static content, and power live applications.
 1. Understand and explain the use of Middleware.
+  Middleware are functions that take in a request and as a stopping point and can choose to manipulate that request, send a response, or do nothing with it.
 1. The basic principles of the REST architectural style.
+  Everything is a resource, resources are accessible via a unique URL, resources can have multiple representations, communication happens over HTTP, and resource management happens via HTTP methods.
 1. Understand and explain the use of Express Routers.
+  Express routers look at the endpoints of a url and executes the corresponding request handler.
 1. Describe tooling used to manually test the correctness of an API.
+  Postman is a tooling used to manually test an API. API testing tools can change the HTTP method, add JSON data to the body, examine the response, etc.
